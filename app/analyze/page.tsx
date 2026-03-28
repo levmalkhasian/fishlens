@@ -221,18 +221,26 @@ export default function Home() {
     setExperienceLevel(level);
   };
 
-  // Effect: when experienceLevel changes and we're already analyzed, re-fetch
+  // Effect: when experienceLevel changes and we're already analyzed, re-fetch (debounced)
   const prevLevel = useRef(experienceLevel);
+  const levelDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     if (prevLevel.current === experienceLevel) return;
     prevLevel.current = experienceLevel;
 
     if (!analyzed) return;
 
-    fetchSummary(currentRepoUrl.current, experienceLevel);
-    if (selectedFile) {
-      fetchExplanation(currentRepoUrl.current, selectedFile, experienceLevel);
-    }
+    if (levelDebounce.current) clearTimeout(levelDebounce.current);
+    levelDebounce.current = setTimeout(() => {
+      fetchSummary(currentRepoUrl.current, experienceLevel);
+      if (selectedFile) {
+        fetchExplanation(currentRepoUrl.current, selectedFile, experienceLevel);
+      }
+    }, 500);
+
+    return () => {
+      if (levelDebounce.current) clearTimeout(levelDebounce.current);
+    };
   }, [experienceLevel, analyzed, selectedFile, fetchSummary, fetchExplanation]);
 
   const levels: ExperienceLevel[] = ["junior", "mid", "senior"];

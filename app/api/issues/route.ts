@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Octokit } from "@octokit/rest";
 import { parseGitHubUrl } from "@/lib/github";
-import { buildIssueExplanationPrompt } from "@/lib/prompts";
 import { generateExplanation } from "@/lib/gemini";
 import { getAICache, setAICache, aiCacheKey } from "@/lib/ai-cache";
 import { getAnalysis } from "@/lib/analyze";
@@ -111,38 +110,67 @@ export async function GET(req: NextRequest) {
     console.warn("[issues] Could not fetch analysis context for issues:", err);
   }
 
-  // Generate AI explanations — cap at MAX_GEMINI_CALLS, use cache
+  // Generate AI explanations — batch all uncached issues into one Gemini call
   const level = experienceLevel as "junior" | "mid" | "senior";
-  const issues = await Promise.all(
-    mapped.map(async (issue, idx) => {
-      let explanation = "";
-      if (idx < MAX_GEMINI_CALLS) {
-        const cacheKey = aiCacheKey("issue", String(issue.id), experienceLevel);
-        const cached = getAICache(cacheKey);
-        if (cached) {
-          explanation = cached;
-        } else {
-          const prompt = buildIssueExplanationPrompt(
-            { title: issue.title, body: issue.body, labels: issue.labels },
-            level,
-            analysisContext?.fileTree,
-            analysisContext?.repoMeta
-          );
-          explanation = await generateExplanation(prompt);
-          setAICache(cacheKey, explanation);
-        }
+  const toExplain = mapped.slice(0, MAX_GEMINI_CALLS);
+
+  // Check cache for each issue
+  const explanationMap = new Map<number, string>();
+  const uncached: typeof toExplain = [];
+  for (const issue of toExplain) {
+    const cacheKey = aiCacheKey("issue", String(issue.id), experienceLevel);
+    const cached = getAICache(cacheKey);
+    if (cached) {
+      explanationMap.set(issue.id, cached);
+    } else {
+      uncached.push(issue);
+    }
+  }
+
+  // Batch uncached issues into a single Gemini call
+  if (uncached.length > 0) {
+    const treeSection = analysisContext?.fileTree
+      ? `\nRelevant files:\n${analysisContext.fileTree.map((f) => f.path).slice(0, 50).join("\n")}`
+      : "";
+    const repoSection = analysisContext?.repoMeta
+      ? `\nRepo: ${analysisContext.repoMeta.name} — ${analysisContext.repoMeta.description || "No description."}`
+      : "";
+
+    const batchPrompt = `You are explaining GitHub issues to a ${level}-level developer.
+Keep each explanation under 100 words. For each issue, cover:
+1. **Summary** — what the issue is about (1 sentence)
+2. **Where to start** — suggest specific files or directories
+3. **Potential approach** — a brief technical hint
+${repoSection}${treeSection}
+
+Return a JSON array where each element has "id" (number) and "explanation" (string).
+Issues:
+${uncached.map((i) => `- ID: ${i.id} | #${i.number} "${i.title}" [${i.labels.join(", ") || "no labels"}] — ${(i.body || "No description.").slice(0, 300)}`).join("\n")}
+
+Respond ONLY with the JSON array, no markdown fences.`;
+
+    try {
+      const raw = await generateExplanation(batchPrompt, { lite: true });
+      const cleaned = raw.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
+      const parsed: Array<{ id: number; explanation: string }> = JSON.parse(cleaned);
+      for (const entry of parsed) {
+        explanationMap.set(entry.id, entry.explanation);
+        setAICache(aiCacheKey("issue", String(entry.id), experienceLevel), entry.explanation);
       }
-      return {
-        id: issue.id,
-        number: issue.number,
-        title: issue.title,
-        url: issue.url,
-        difficulty: issue.difficulty,
-        labels: issue.labels,
-        explanation,
-      };
-    })
-  );
+    } catch (err) {
+      console.error("[issues] Batch explanation failed, falling back:", err);
+    }
+  }
+
+  const issues = mapped.map((issue) => ({
+    id: issue.id,
+    number: issue.number,
+    title: issue.title,
+    url: issue.url,
+    difficulty: issue.difficulty,
+    labels: issue.labels,
+    explanation: explanationMap.get(issue.id) ?? "",
+  }));
 
   return NextResponse.json({ issues });
 }
