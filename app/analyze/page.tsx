@@ -511,16 +511,16 @@ export default function Home() {
                   <span className="font-bold">AI Generated Banner</span>
                   <span className="text-[11px]">{bannerLoading && !bannerImage ? "GENERATING..." : "COMPLETE"}</span>
                 </div>
-                <div className="retro-window-body p-1">
+                <div className="retro-window-body p-0 bg-black flex items-center justify-center">
                   {bannerLoading && !bannerImage ? (
-                    <div className="p-6 text-center text-xs text-black/50 animate-pulse">
+                    <div className="p-6 text-center text-xs text-white/50 animate-pulse">
                       Generating retro pixel art banner...
                     </div>
                   ) : bannerImage ? (
                     <img
                       src={bannerImage}
                       alt="AI-generated repo banner"
-                      className="w-full h-auto"
+                      className="w-full h-auto block"
                       style={{ imageRendering: "pixelated" }}
                     />
                   ) : null}
