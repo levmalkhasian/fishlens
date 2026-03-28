@@ -67,6 +67,11 @@ export default function Home() {
   const [explanation, setExplanation] = useState("");
   const [explanationStreaming, setExplanationStreaming] = useState(false);
 
+  // Image gen
+  const [bannerImage, setBannerImage] = useState<string | null>(null);
+  const [bannerLoading, setBannerLoading] = useState(false);
+  const [fileIcons, setFileIcons] = useState<Record<string, string>>({});
+
   // Visual vibe states
   const [now, setNow] = useState<Date | null>(null);
 
@@ -103,6 +108,52 @@ export default function Home() {
       setter((prev) => prev + text);
     }
   }
+
+  // Generate repo banner image
+  const generateBanner = useCallback(async (name: string, description: string, language: string) => {
+    setBannerLoading(true);
+    setBannerImage(null);
+    try {
+      const res = await fetch("/api/imagegen", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: `Create a retro Windows 95/98 pixel art banner (wide, 4:1 aspect ratio) for a software project called "${name}". Language: ${language || "various"}. Description: ${description || "A code repository"}. Use chunky pixels, limited palette (teals, navy, silver, hot pink), beveled edges, old-school computer vibes. Include the project name as pixel text. No modern gradients.`,
+        }),
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.image) setBannerImage(`data:${data.mimeType};base64,${data.image}`);
+    } catch (err) {
+      console.error("[page] Banner gen failed:", err);
+    } finally {
+      setBannerLoading(false);
+    }
+  }, []);
+
+  // Generate pixel art icons for file types
+  const generateFileIcons = useCallback(async (extensions: string[]) => {
+    // Generate top 6 unique extensions
+    const toGenerate = extensions.slice(0, 6);
+    for (const ext of toGenerate) {
+      try {
+        const res = await fetch("/api/imagegen", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            prompt: `Create a tiny 32x32 pixel art icon for a .${ext} file. Retro Windows 95 style, simple, recognizable, chunky pixels, limited color palette. Just the icon, no text, no background, transparent.`,
+          }),
+        });
+        if (!res.ok) continue;
+        const data = await res.json();
+        if (data.image) {
+          setFileIcons((prev) => ({ ...prev, [ext]: `data:${data.mimeType};base64,${data.image}` }));
+        }
+      } catch {
+        // Skip failed icons
+      }
+    }
+  }, []);
 
   // Fetch summary (streaming)
   const fetchSummary = useCallback(async (url: string, level: ExperienceLevel) => {
@@ -199,8 +250,19 @@ export default function Home() {
       setDependencyGraph(parsed.dependencyGraph);
       setAnalyzed(true);
 
-      // Then start streaming summary
+      // Start streaming summary
       fetchSummary(repoUrl, experienceLevel);
+
+      // Generate banner + file icons in background
+      const meta = parsed.repoMeta;
+      generateBanner(meta.name, meta.description, meta.language);
+      const exts = [...new Set(
+        (parsed.fileTree as FileTreeEntry[])
+          .filter((f: FileTreeEntry) => f.type === "file")
+          .map((f: FileTreeEntry) => f.path.split(".").pop()?.toLowerCase())
+          .filter(Boolean)
+      )] as string[];
+      generateFileIcons(exts);
     } catch (err) {
       console.error("[page] Analyze failed:", err);
       setSummary(`Error: ${(err as Error).message}. Check the repo URL and try again.`);
@@ -401,6 +463,26 @@ export default function Home() {
                   ))}
                 </div>
               )}
+
+              {/* AI-generated repo banner */}
+              {(bannerImage || bannerLoading) && (
+                <div className="mt-3">
+                  {bannerLoading && !bannerImage ? (
+                    <div className="retro-panel-inset p-4 text-center text-xs text-black/50 animate-pulse">
+                      Generating retro banner...
+                    </div>
+                  ) : bannerImage ? (
+                    <div className="retro-panel-inset p-1">
+                      <img
+                        src={bannerImage}
+                        alt="AI-generated repo banner"
+                        className="w-full h-auto"
+                        style={{ imageRendering: "pixelated" }}
+                      />
+                    </div>
+                  ) : null}
+                </div>
+              )}
             </div>
           </section>
 
@@ -504,6 +586,7 @@ export default function Home() {
                     explanation={explanation}
                     explanationStreaming={explanationStreaming}
                     experienceLevel={experienceLevel}
+                    fileIcons={fileIcons}
                   />
                 </div>
               </div>
