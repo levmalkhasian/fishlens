@@ -1,8 +1,5 @@
 import { NextRequest } from "next/server";
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? "";
-const GEMINI_TTS_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${GEMINI_API_KEY}`;
-
 export async function POST(req: NextRequest) {
   let body: { text?: string };
   try {
@@ -16,11 +13,19 @@ export async function POST(req: NextRequest) {
     return new Response("Text too short", { status: 400 });
   }
 
-  // Cap at ~3000 chars to keep audio response reasonable
+  const apiKey = process.env.GEMINI_API_KEY ?? "";
+  if (!apiKey || apiKey.startsWith("your_")) {
+    return new Response(JSON.stringify({ error: "GEMINI_API_KEY not configured" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   const truncated = text.slice(0, 3000);
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
 
   try {
-    const res = await fetch(GEMINI_TTS_URL, {
+    const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -45,7 +50,7 @@ export async function POST(req: NextRequest) {
     if (!res.ok) {
       const err = await res.text();
       console.error("[tts] Gemini TTS failed:", res.status, err);
-      return new Response(JSON.stringify({ error: "TTS generation failed", detail: err }), {
+      return new Response(JSON.stringify({ error: "TTS generation failed", status: res.status, detail: err }), {
         status: 502,
         headers: { "Content-Type": "application/json" },
       });
@@ -58,7 +63,7 @@ export async function POST(req: NextRequest) {
 
     if (!audioPart?.inlineData) {
       console.error("[tts] No audio in response:", JSON.stringify(data).slice(0, 500));
-      return new Response(JSON.stringify({ error: "No audio generated" }), {
+      return new Response(JSON.stringify({ error: "No audio in response" }), {
         status: 502,
         headers: { "Content-Type": "application/json" },
       });
