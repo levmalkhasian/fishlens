@@ -153,11 +153,18 @@ export function buildRepoSummaryPrompt(
 
 ${FORMAT_RULES}
 
-Keep your response under 200 words. Provide a tight summary covering:
-1. **What it does** — one sentence
-2. **Architecture** — key directories and their roles (3-5 bullets max)
-3. **Tech stack** — frameworks and key dependencies
-4. **Key connections** — how the main modules connect to each other
+Keep your response under 200 words. Provide a tight summary. You MUST format your response using exactly these headings:
+### What it does
+(one sentence)
+
+### Architecture
+(key directories and their roles, 3-5 bullets max)
+
+### Tech stack
+(frameworks and key dependencies)
+
+### Key connections
+(how the main modules connect to each other)
 
 Repository: ${repoMeta.name}
 Description: ${repoMeta.description || "No description provided."}

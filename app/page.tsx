@@ -1,11 +1,10 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import FileExplorer from "@/components/FileExplorer";
 import ExplanationPanel from "@/components/ExplanationPanel";
 import CallGraph from "@/components/CallGraph";
+import SummaryPanel from "@/components/SummaryPanel";
 import IssuesPanel from "@/components/IssuesPanel";
 
 type ExperienceLevel = "junior" | "mid" | "senior";
@@ -53,8 +52,6 @@ export default function Home() {
   const [explanation, setExplanation] = useState("");
   const [explanationStreaming, setExplanationStreaming] = useState(false);
 
-  // Summary collapsible
-  const [summaryOpen, setSummaryOpen] = useState(true);
 
   // Abort controllers for cancellation
   const summaryAbort = useRef<AbortController | null>(null);
@@ -287,35 +284,8 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Summary Panel — collapsible */}
-        {(summary || summaryStreaming) && (
-          <div className="mt-4 rounded-lg border border-zinc-800 bg-zinc-900/50">
-            <button
-              onClick={() => setSummaryOpen((o) => !o)}
-              className="w-full px-4 py-3 flex items-center gap-2 text-left hover:bg-zinc-800/30 transition-colors rounded-t-lg"
-            >
-              <span
-                className={`text-zinc-500 text-xs transition-transform ${summaryOpen ? "rotate-90" : ""}`}
-              >
-                ▶
-              </span>
-              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-                Repository Summary
-              </span>
-              {!summaryOpen && (
-                <span className="ml-auto text-[10px] text-zinc-600">
-                  Click to expand
-                </span>
-              )}
-            </button>
-            {summaryOpen && (
-              <div className="px-4 pb-4 prose-glitch text-sm text-zinc-300 leading-relaxed">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{summary}</ReactMarkdown>
-                {summaryStreaming && <span className="cursor-blink" />}
-              </div>
-            )}
-          </div>
-        )}
+        {/* Summary Panel */}
+        <SummaryPanel summary={summary} streaming={summaryStreaming} />
 
         {/* Three-Panel Layout */}
         {analyzed && (
