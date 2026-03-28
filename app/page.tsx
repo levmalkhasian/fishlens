@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import FishIcon from "@/components/FishIcon";
 
 const SCRAMBLE_CHARS = "!@#$%^&*()_+-=[]{}|;:,.<>?/~`";
 
@@ -77,9 +78,9 @@ export default function LandingPage() {
       <div className="retro-shell sticky top-0 z-50 border-b-2 border-black/50">
         <div className="retro-titlebar px-3 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="retro-led" />
+            <FishIcon size={18} />
             <span className="font-bold tracking-wide uppercase">
-              FISHLENS :: BOOT SEQUENCE
+              FISHLENS
             </span>
           </div>
           <div className="text-xs font-bold">
@@ -93,7 +94,23 @@ export default function LandingPage() {
         <div
           className={`transition-all duration-700 ${booted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
         >
-          {/* Logo window */}
+          {/* Logo above window */}
+          <div className="flex flex-col items-center gap-2 mb-5">
+            <FishIcon size={64} transparent />
+            <h1
+              className="text-5xl font-black tracking-tight leading-none select-none cursor-pointer"
+              style={{ fontFamily: "'Lucida Console', 'Courier New', monospace" }}
+              onMouseEnter={() => setHovered(true)}
+              onMouseLeave={() => setHovered(false)}
+            >
+              {title}
+            </h1>
+            <p className="text-sm font-bold uppercase tracking-widest text-[#000080]">
+              Codebase Wide-Angle Scanner
+            </p>
+          </div>
+
+          {/* Main window */}
           <div className="retro-window max-w-[620px] w-full mx-auto">
             <div className="retro-titlebar retro-titlebar-hot px-3 py-1.5 flex items-center justify-between">
               <span className="font-bold">System :: Welcome</span>
@@ -101,19 +118,6 @@ export default function LandingPage() {
             </div>
 
             <div className="retro-window-body text-center space-y-6 py-8">
-              {/* Text logo with scramble effect */}
-              <h1
-                className="text-5xl font-black tracking-tight leading-none select-none cursor-pointer"
-                style={{ fontFamily: "'Lucida Console', 'Courier New', monospace" }}
-                onMouseEnter={() => setHovered(true)}
-                onMouseLeave={() => setHovered(false)}
-              >
-                {title}
-              </h1>
-
-              <p className="text-sm font-bold uppercase tracking-widest text-[#000080]">
-                Codebase Wide-Angle Scanner
-              </p>
 
               {/* Description panel */}
               <div className="retro-panel-inset p-4 text-left mx-4">
@@ -207,9 +211,12 @@ export default function LandingPage() {
 
       {/* Taskbar */}
       <div className="retro-taskbar">
-        <span className="text-xs font-bold tracking-wider" style={{ fontFamily: "'Lucida Console', monospace" }}>
-          FISHLENS&trade;
-        </span>
+        <div className="flex items-center gap-1.5">
+          <FishIcon size={14} />
+          <span className="text-xs font-bold tracking-wider" style={{ fontFamily: "'Lucida Console', monospace" }}>
+            FISHLENS&trade;
+          </span>
+        </div>
       </div>
 
       {/* XP Hourglass transition overlay */}
@@ -217,7 +224,10 @@ export default function LandingPage() {
         <div className={`xp-transition-overlay ${leaving ? "leaving" : ""}`}>
           <div className="retro-window" style={{ minWidth: 280 }}>
             <div className="retro-titlebar px-3 py-1.5 flex items-center justify-between">
-              <span className="font-bold text-sm">Loading...</span>
+              <div className="flex items-center gap-1.5">
+                <FishIcon size={14} />
+                <span className="font-bold text-sm">Loading...</span>
+              </div>
               <span className="text-[11px]">FISHLENS</span>
             </div>
             <div className="retro-window-body flex flex-col items-center py-6 gap-1">
