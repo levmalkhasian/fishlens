@@ -262,8 +262,13 @@ export default function RepoTree({
 
   const handleSpeak = useCallback(async (text: string) => {
     if (speaking) { stopAudio(); return; }
-    const plain = text.replace(/```[\s\S]*?```/g, "").replace(/[*#`\[\]()]/g, "").replace(/\n{2,}/g, ". ").trim();
+    let plain = text.replace(/```[\s\S]*?```/g, "").replace(/[*#`\[\]()]/g, "").replace(/\n{2,}/g, ". ").trim();
     if (!plain || plain.length < 5) return;
+    // Cap at ~500 chars on a sentence boundary for faster TTS
+    if (plain.length > 500) {
+      const cut = plain.lastIndexOf(".", 500);
+      plain = plain.slice(0, cut > 100 ? cut + 1 : 500);
+    }
     setLoadingAudio(true);
     setTtsError(false);
     try {

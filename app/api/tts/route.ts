@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  const truncated = text.slice(0, 3000);
+  const truncated = text.slice(0, 600);
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
 
   try {
