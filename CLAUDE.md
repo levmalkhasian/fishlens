@@ -45,6 +45,8 @@ All explain/summary/parse routes share `lib/analyze.ts` → `getAnalysis()` whic
   - **File view**: per-file function diagram with imports, functions, and calls. Toggle to hide external imports.
   - Breadcrumb navigation between views. Zoom/pan, fullscreen overlay, clickable nodes with tooltips.
 - `IssuesPanel.tsx` — GitHub issues list with difficulty badges and AI explanations
+- `SummaryPanel.tsx` — collapsible repo summary with section cards, colored by topic
+- `FishIcon.tsx` — pixel-art fish SVG logo, supports `size`, `transparent` (no teal bg), and `className` props. Used in titlebars, taskbars, landing page hero, and loading overlay.
 
 ### Caching Strategy
 
@@ -110,3 +112,10 @@ This uses a recent Next.js with potential breaking changes from older versions. 
 - Gemini streaming responses are accumulated and cached after completion via `ai-cache.ts`.
 - Dependency graph resolves imports to actual files: relative (`./`, `../`), alias (`@/`), and bare specifiers (npm → marked external).
 - CallGraph has two view modes: "repo" (dependency overview) and "file" (function-level detail). The component switches automatically when a file is selected.
+- Date displays use a fake Y2K date (Dec 31, 1999) with real ticking time for retro flavor. Initialized as `null` to avoid hydration mismatch.
+- `FishIcon` component has a `transparent` prop for use over non-teal backgrounds (e.g. the landing page hero). Also used as `app/icon.svg` favicon.
+
+### Routing
+
+- `/` — Landing page with retro boot screen, FISHLENS branding, XP hourglass transition to analyzer
+- `/analyze` — Main analyzer dashboard (file explorer, call graph, explanations, issues)

@@ -6,6 +6,7 @@ import ExplanationPanel from "@/components/ExplanationPanel";
 import CallGraph from "@/components/CallGraph";
 import SummaryPanel from "@/components/SummaryPanel";
 import IssuesPanel from "@/components/IssuesPanel";
+import FishIcon from "@/components/FishIcon";
 
 type ExperienceLevel = "junior" | "mid" | "senior";
 
@@ -257,7 +258,7 @@ export default function Home() {
       <div className="retro-shell sticky top-0 z-50 border-b-2 border-black/50">
         <div className="retro-titlebar px-3 py-2 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="retro-led" />
+            <FishIcon size={18} />
             <span className="font-bold tracking-wide uppercase truncate">
               FISHLENS :: Codebase Wide-Angle Scanner
             </span>
@@ -518,7 +519,7 @@ export default function Home() {
 
       <footer className="retro-taskbar">
         <div className="retro-task-start">Start</div>
-        <div className="retro-task-item">FISHLENS</div>
+        <div className="retro-task-item flex items-center gap-1.5"><FishIcon size={14} /> FISHLENS</div>
         <div className="retro-task-item">Analyzer</div>
         <div className="retro-task-clock">
           {now ? now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "\u00A0"}

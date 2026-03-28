@@ -1,15 +1,16 @@
-# FISHLENS — AI-Powered Codebase Explainer
+# FISHLENS — Codebase Wide-Angle Scanner
 
-FISHLENS analyzes any public GitHub repository and generates interactive, AI-powered explanations of its code. Point it at a repo URL, pick your experience level, and get streaming explanations, visual call graphs, and issue breakdowns — all in the browser.
+FISHLENS analyzes any public GitHub repository and generates interactive, AI-powered explanations of its code. Point it at a repo URL, pick your experience level, and get streaming explanations, visual call graphs, and issue breakdowns — all wrapped in a retro Windows 95/XP-themed UI.
 
 ## Features
 
-- **Repository Analysis** — Fetches repo metadata, file tree, and source code via the GitHub API. Parses up to 50 TypeScript/JavaScript files using tree-sitter AST analysis to extract imports, exports, and function-level call graphs.
-- **Streaming AI Explanations** — Gemini 2.0 Flash generates real-time streaming explanations for individual files and full repository summaries, tailored to your experience level (junior / mid / senior).
-- **Interactive File Explorer** — Collapsible sidebar file tree. Click any file to get an AI explanation and its call graph side-by-side.
-- **Mermaid Call Graph Visualization** — Renders interactive dependency diagrams showing imports, function definitions, and call relationships for each file.
+- **Repository Analysis** — Fetches repo metadata, file tree, and source code via the GitHub API. Parses up to 80 text files (any language) using tree-sitter AST analysis for JS/TS and generic AI analysis for everything else.
+- **Streaming AI Explanations** — Gemini 2.5 Flash generates real-time streaming explanations for individual files and full repository summaries, tailored to your experience level (junior / mid / senior).
+- **Cross-File Dependency Graph** — Resolves imports to actual files, tracks symbol usage across boundaries, and visualizes the full dependency web.
+- **Two-Level Call Graph** — Repo-level view (files as nodes grouped by directory) and file-level view (function diagram with imports/calls). Zoom, pan, fullscreen, clickable nodes.
 - **GitHub Issues with Difficulty Classification** — Fetches open issues, classifies them by difficulty (easy/medium/hard), and generates AI explanations for each.
-- **In-Memory Caching** — Parsed results are cached for 15 minutes to avoid redundant GitHub API calls.
+- **Two-Tier Caching** — Repo data cached 15 min (50 entries), AI responses cached 60 min (200 entries). Same repo analyzed by 10 users = 1 set of API calls.
+- **Retro UI** — Windows 95 windows, titlebars, and buttons. Y2K-era date display. XP hourglass page transitions. Pixel-art fish favicon and logo.
 
 ## Tech Stack
 
@@ -19,7 +20,7 @@ FISHLENS analyzes any public GitHub repository and generates interactive, AI-pow
 | Language | TypeScript |
 | Styling | Tailwind CSS |
 | Code Parsing | web-tree-sitter (WASM) |
-| AI | Google Gemini 2.0 Flash |
+| AI | Google Gemini 2.5 Flash |
 | GitHub API | @octokit/rest |
 | Diagrams | Mermaid |
 | Deployment | Railway (Nixpacks) |
@@ -102,27 +103,33 @@ Returns `{ "status": "ok", "timestamp": "..." }` — used by Railway for deploym
 
 ```
 app/
+  page.tsx             — Landing page (retro boot screen)
+  analyze/page.tsx     — Main analyzer dashboard
+  icon.svg             — Pixel-art fish favicon
   api/
-    parse/       — GitHub ingestion + tree-sitter parsing
-    explain/     — Streaming file explanations via Gemini
-    summary/     — Streaming repo summaries via Gemini
-    issues/      — GitHub issues with AI difficulty classification
-    health/      — Healthcheck endpoint
-  page.tsx       — Main dashboard UI
-  layout.tsx     — Root layout
+    parse/             — GitHub ingestion + tree-sitter parsing
+    explain/           — Streaming file explanations via Gemini
+    summary/           — Streaming repo summaries via Gemini
+    issues/            — GitHub issues with AI difficulty classification
+    health/            — Healthcheck endpoint
 
 lib/
-  github.ts      — GitHub URL parsing + Octokit data fetching
-  parser.ts      — web-tree-sitter AST analysis
-  gemini.ts      — Gemini API wrapper (streaming + non-streaming)
-  prompts.ts     — Prompt builders for different explanation contexts
-  cache.ts       — In-memory TTL cache
+  github.ts            — GitHub URL parsing + Octokit data fetching
+  parser.ts            — web-tree-sitter AST analysis
+  analyze.ts           — Shared analysis pipeline (GitHub → parser → dependency graph → cache)
+  dependency-graph.ts  — Cross-file import resolution and symbol tracking
+  gemini.ts            — Gemini API wrapper (streaming + non-streaming)
+  prompts.ts           — Prompt builders for different explanation contexts
+  cache.ts             — Repo data TTL cache (50 entries, 15 min)
+  ai-cache.ts          — AI response TTL cache (200 entries, 60 min)
 
 components/
-  FileExplorer.tsx      — Collapsible file tree sidebar
-  ExplanationPanel.tsx  — Streaming AI explanation display
-  CallGraph.tsx         — Mermaid call graph visualization
-  IssuesPanel.tsx       — Issues list with difficulty badges
+  FileExplorer.tsx     — Collapsible file tree sidebar
+  ExplanationPanel.tsx — Streaming AI explanation display
+  CallGraph.tsx        — Two-level Mermaid call graph (repo + file views)
+  SummaryPanel.tsx     — Collapsible repo summary cards
+  IssuesPanel.tsx      — Issues list with difficulty badges
+  FishIcon.tsx         — Pixel-art fish logo component (transparent/teal bg)
 ```
 
 ## Deployment
