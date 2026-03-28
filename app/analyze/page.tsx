@@ -349,7 +349,7 @@ export default function Home() {
       </div>
 
       <main className="max-w-[1500px] w-full mx-auto px-4 py-4 space-y-4">
-        <div className="grid gap-4 xl:grid-cols-[1.5fr_1fr]">
+        <div className="grid gap-4 xl:grid-cols-[1.5fr_1fr] items-start">
           <section className="retro-window">
             <div className="retro-titlebar px-3 py-1.5 flex items-center justify-between">
               <span className="font-bold">Mission Console</span>
