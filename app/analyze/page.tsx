@@ -39,7 +39,7 @@ const SAMPLE_REPOS = [
 ];
 
 const TICKER_TEXT =
-  "WELCOME TO GLITCH.EXE // DROP A GITHUB URL // PICK YOUR SKILL LEVEL // WATCH THE CODEBASE UNFOLD LIVE // BEEP BOOP ANALYSIS ONLINE";
+  "WELCOME TO FISHLENS // DROP A GITHUB URL // PICK YOUR SKILL LEVEL // WATCH THE CODEBASE UNFOLD LIVE // WIDE-ANGLE SCANNING ONLINE";
 
 export default function Home() {
   const [repoUrl, setRepoUrl] = useState("");
@@ -254,7 +254,7 @@ export default function Home() {
           <div className="flex items-center gap-2 min-w-0">
             <span className="retro-led" />
             <span className="font-bold tracking-wide uppercase truncate">
-              GLITCH.EXE :: Codebase Brain Scanner
+              FISHLENS :: Codebase Wide-Angle Scanner
             </span>
           </div>
           <div className="text-xs font-bold shrink-0">
@@ -281,7 +281,7 @@ export default function Home() {
 
             <div className="retro-window-body space-y-4">
               <p className="text-sm leading-relaxed">
-                Drop a public GitHub repo and GLITCH breaks it down like a classic hacker toy:
+                Drop a public GitHub repo and FISHLENS breaks it down like a classic hacker toy:
                 repo map, cross-file connections, live AI explainers, and starter issues.
                 It is intentionally loud, and still fast enough to be useful.
               </p>
@@ -513,7 +513,7 @@ export default function Home() {
 
       <footer className="retro-taskbar">
         <div className="retro-task-start">Start</div>
-        <div className="retro-task-item">GLITCH.EXE</div>
+        <div className="retro-task-item">FISHLENS</div>
         <div className="retro-task-item">Analyzer</div>
         <div className="retro-task-clock">
           {now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}

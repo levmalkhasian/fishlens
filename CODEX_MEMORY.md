@@ -3,7 +3,7 @@
 Last updated: 2026-03-28
 
 ## Project Identity
-- Name: GLITCH (AI-powered GitHub codebase explainer)
+- Name: FISHLENS (AI-powered GitHub codebase explainer)
 - Framework: Next.js App Router (`next@16.2.1`) + React 19 + TypeScript
 - UI: Tailwind CSS v4
 - AI: Google Gemini (`gemini-2.5-flash`)

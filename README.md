@@ -1,6 +1,6 @@
-# GLITCH — AI-Powered Codebase Explainer
+# FISHLENS — AI-Powered Codebase Explainer
 
-GLITCH analyzes any public GitHub repository and generates interactive, AI-powered explanations of its code. Point it at a repo URL, pick your experience level, and get streaming explanations, visual call graphs, and issue breakdowns — all in the browser.
+FISHLENS analyzes any public GitHub repository and generates interactive, AI-powered explanations of its code. Point it at a repo URL, pick your experience level, and get streaming explanations, visual call graphs, and issue breakdowns — all in the browser.
 
 ## Features
 
@@ -35,8 +35,8 @@ GLITCH analyzes any public GitHub repository and generates interactive, AI-power
 ### Setup
 
 ```bash
-git clone https://github.com/arhovumyan/GLITCH_Hackaton.git
-cd GLITCH_Hackaton
+git clone https://github.com/arhovumyan/FISHLENS_Hackaton.git
+cd FISHLENS_Hackaton
 npm install
 cp .env.local.example .env.local
 ```

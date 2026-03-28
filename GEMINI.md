@@ -4,7 +4,7 @@ This file provides foundational mandates and contextual guidance for Gemini CLI 
 
 ## Project Overview
 
-**GLITCH** is an AI-powered codebase explainer that analyzes public GitHub repositories. It generates interactive explanations, visual call graphs, and issue breakdowns using AST analysis and Large Language Models.
+**FISHLENS** is an AI-powered codebase explainer that analyzes public GitHub repositories. It generates interactive explanations, visual call graphs, and issue breakdowns using AST analysis and Large Language Models.
 
 - **Main Technologies:** Next.js 15+ (App Router), TypeScript, Tailwind CSS, Google Gemini 2.0 Flash, Octokit, web-tree-sitter (WASM), Mermaid.js.
 - **Key Features:**
@@ -52,7 +52,7 @@ The project follows a standard Next.js App Router structure without a `src/` dir
 ### Code Style & Standards
 - **TypeScript:** Strict typing is preferred. Use interfaces for data structures (e.g., `RepoMeta`, `CallGraphEntry`).
 - **Next.js:** Use Server Components where possible, but UI-heavy components (FileExplorer, CallGraph, etc.) must be `'use client'`.
-- **Styling:** Tailwind CSS with modern utilities. Custom prose styling in `globals.css` (`.prose-glitch`).
+- **Styling:** Tailwind CSS with modern utilities. Custom prose styling in `globals.css` (`.prose-glitch` (class name kept for compatibility)).
 
 ### Tree-sitter Usage (Critical)
 - We use `web-tree-sitter` (WASM) to ensure compatibility across environments.
