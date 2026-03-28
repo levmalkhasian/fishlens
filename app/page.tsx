@@ -43,6 +43,8 @@ export default function LandingPage() {
   const [hovered, setHovered] = useState(false);
   const [now, setNow] = useState(() => new Date());
   const [booted, setBooted] = useState(false);
+  const [transitioning, setTransitioning] = useState(false);
+  const [leaving, setLeaving] = useState(false);
 
   const title = useGlitchText("GLITCH.EXE", hovered);
 
@@ -55,6 +57,13 @@ export default function LandingPage() {
     const t = setTimeout(() => setBooted(true), 300);
     return () => clearTimeout(t);
   }, []);
+
+  const handleLaunch = () => {
+    setTransitioning(true);
+    // After progress bar fills, fade out then navigate
+    setTimeout(() => setLeaving(true), 1800);
+    setTimeout(() => router.push("/analyze"), 2200);
+  };
 
   return (
     <div className="retro-desktop min-h-screen pb-14 flex flex-col">
@@ -138,10 +147,11 @@ export default function LandingPage() {
               {/* CTA Button */}
               <div className="pt-2">
                 <button
-                  onClick={() => router.push("/analyze")}
+                  onClick={handleLaunch}
+                  disabled={transitioning}
                   className="retro-button retro-button-primary text-lg px-10 py-3 tracking-wider"
                 >
-                  LAUNCH ANALYZER
+                  {transitioning ? "LOADING..." : "LAUNCH ANALYZER"}
                 </button>
               </div>
 
@@ -186,6 +196,40 @@ export default function LandingPage() {
           {now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
         </div>
       </div>
+
+      {/* XP Hourglass transition overlay */}
+      {transitioning && (
+        <div className={`xp-transition-overlay ${leaving ? "leaving" : ""}`}>
+          <div className="retro-window" style={{ minWidth: 280 }}>
+            <div className="retro-titlebar px-3 py-1.5 flex items-center justify-between">
+              <span className="font-bold text-sm">Loading...</span>
+              <span className="text-[11px]">GLITCH.EXE</span>
+            </div>
+            <div className="retro-window-body flex flex-col items-center py-6 gap-1">
+              {/* Hourglass */}
+              <div className="xp-hourglass">
+                <div className="xp-hourglass-stream" />
+              </div>
+
+              <p
+                className="text-xs font-bold mt-4 uppercase tracking-wider"
+                style={{ fontFamily: "'Lucida Console', monospace" }}
+              >
+                Initializing Brain Scanner...
+              </p>
+
+              <p className="text-[11px] text-[#666] mt-1">
+                Please wait while GLITCH.EXE loads
+              </p>
+
+              {/* XP-style progress bar */}
+              <div className="xp-progress-track mt-2">
+                <div className="xp-progress-fill" />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
