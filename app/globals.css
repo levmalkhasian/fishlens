@@ -445,6 +445,139 @@
   }
 }
 
+/* ── XP Hourglass transition overlay ──────────────────────────── */
+.xp-transition-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--retro-bg);
+  background-image:
+    radial-gradient(circle at 40% 30%, rgba(255,255,0,0.2), transparent 40%),
+    radial-gradient(circle at 70% 70%, rgba(0,208,255,0.15), transparent 35%);
+  animation: xp-fade-in 0.25s ease-out;
+}
+
+.xp-transition-overlay.leaving {
+  animation: xp-fade-out 0.4s ease-in forwards;
+}
+
+@keyframes xp-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes xp-fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* Hourglass container */
+.xp-hourglass {
+  width: 40px;
+  height: 40px;
+  position: relative;
+  animation: xp-hourglass-flip 1.6s ease-in-out infinite;
+}
+
+/* Top half of hourglass */
+.xp-hourglass::before,
+.xp-hourglass::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  height: 16px;
+  border: 3px solid #000080;
+}
+
+.xp-hourglass::before {
+  top: 0;
+  border-radius: 2px 2px 0 0;
+  background: linear-gradient(to bottom, #ffe100 0%, #ffe100 var(--sand-top, 100%), transparent var(--sand-top, 100%));
+  animation: xp-sand-drain 1.6s ease-in infinite;
+}
+
+.xp-hourglass::after {
+  bottom: 0;
+  border-radius: 0 0 2px 2px;
+  background: linear-gradient(to bottom, transparent var(--sand-bottom, 100%), #ffe100 var(--sand-bottom, 100%));
+  animation: xp-sand-fill 1.6s ease-in infinite;
+}
+
+/* Sand stream in the middle */
+.xp-hourglass-stream {
+  position: absolute;
+  left: 50%;
+  top: 16px;
+  width: 2px;
+  height: 8px;
+  margin-left: -1px;
+  background: #ffe100;
+  animation: xp-stream-blink 0.4s step-start infinite;
+}
+
+@keyframes xp-hourglass-flip {
+  0%, 45%  { transform: rotate(0deg); }
+  50%, 95% { transform: rotate(180deg); }
+  100%     { transform: rotate(360deg); }
+}
+
+@keyframes xp-sand-drain {
+  0%   { --sand-top: 100%; }
+  45%  { --sand-top: 5%; }
+  50%  { --sand-top: 100%; }
+  95%  { --sand-top: 5%; }
+  100% { --sand-top: 100%; }
+}
+
+@keyframes xp-sand-fill {
+  0%   { --sand-bottom: 100%; }
+  45%  { --sand-bottom: 5%; }
+  50%  { --sand-bottom: 100%; }
+  95%  { --sand-bottom: 5%; }
+  100% { --sand-bottom: 100%; }
+}
+
+@keyframes xp-stream-blink {
+  50% { opacity: 0.3; }
+}
+
+/* Progress bar under hourglass */
+.xp-progress-track {
+  width: 200px;
+  height: 18px;
+  margin-top: 16px;
+  border: 2px solid;
+  border-color: var(--retro-border-dark) var(--retro-border-light)
+    var(--retro-border-light) var(--retro-border-dark);
+  background: #fff;
+  overflow: hidden;
+}
+
+.xp-progress-fill {
+  height: 100%;
+  background: repeating-linear-gradient(
+    -45deg,
+    #000080,
+    #000080 6px,
+    #1084d0 6px,
+    #1084d0 12px
+  );
+  animation: xp-progress-grow 1.8s ease-in-out forwards;
+}
+
+@keyframes xp-progress-grow {
+  0%   { width: 0%; }
+  20%  { width: 25%; }
+  50%  { width: 60%; }
+  80%  { width: 85%; }
+  100% { width: 100%; }
+}
+
 @media (max-width: 768px) {
   .retro-task-item {
     display: none;
