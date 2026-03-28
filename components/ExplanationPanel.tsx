@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -10,12 +11,58 @@ interface ExplanationPanelProps {
   filePath: string | null;
 }
 
+function stripMarkdown(md: string): string {
+  return md
+    .replace(/```[\s\S]*?```/g, "code block omitted")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/\*([^*]+)\*/g, "$1")
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/^\s*[-*]\s+/gm, "")
+    .replace(/\n{2,}/g, ". ")
+    .trim();
+}
+
 export default function ExplanationPanel({
   text,
   isStreaming,
   experienceLevel,
   filePath,
 }: ExplanationPanelProps) {
+  const [speaking, setSpeaking] = useState(false);
+
+  // Stop speech when file or text changes
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      setSpeaking(false);
+    }
+  }, [filePath, text]);
+
+  const handleSpeak = useCallback(() => {
+    if (!window.speechSynthesis) return;
+
+    if (speaking) {
+      window.speechSynthesis.cancel();
+      setSpeaking(false);
+      return;
+    }
+
+    const plain = stripMarkdown(text);
+    if (!plain) return;
+
+    const utterance = new SpeechSynthesisUtterance(plain);
+    utterance.rate = 1.05;
+    utterance.pitch = 0.9;
+    utterance.onend = () => setSpeaking(false);
+    utterance.onerror = () => setSpeaking(false);
+
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+    setSpeaking(true);
+  }, [text, speaking]);
+
   if (!filePath && !text) {
     return (
       <div className="h-full flex items-center justify-center text-black/60 text-sm bg-[#f4f4f4]">
@@ -64,6 +111,16 @@ export default function ExplanationPanel({
         <span className={`text-[10px] px-1.5 py-0.5 font-bold ${config.badgeClass}`}>
           {config.badge}
         </span>
+        {text && !isStreaming && (
+          <button
+            type="button"
+            onClick={handleSpeak}
+            className="text-[10px] px-1.5 py-0.5 font-bold bg-white/20 hover:bg-white/30 transition-colors uppercase tracking-wide"
+            title={speaking ? "Stop speaking" : "Read aloud"}
+          >
+            {speaking ? "Stop" : "Speak"}
+          </button>
+        )}
         {filePath && (
           <span className="text-[11px] text-white/85 font-mono ml-auto truncate max-w-[220px]">
             {filePath}

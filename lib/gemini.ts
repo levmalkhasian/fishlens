@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? "");
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+const modelLite = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 function friendlyError(err: unknown): string {
   const msg = err instanceof Error ? err.message : String(err);
@@ -12,40 +13,39 @@ function friendlyError(err: unknown): string {
   return `Explanation unavailable: ${msg}`;
 }
 
-export async function generateExplanation(prompt: string): Promise<string> {
+export async function generateExplanation(prompt: string, { lite = false } = {}): Promise<string> {
   const t0 = performance.now();
-  console.log(`[gemini] generateExplanation — prompt length: ${prompt.length}`);
+  const m = lite ? modelLite : model;
+  const tag = lite ? "generateExplanation[lite]" : "generateExplanation";
+  console.log(`[gemini] ${tag} — prompt length: ${prompt.length}`);
   try {
-    const result = await model.generateContent(prompt);
+    const result = await m.generateContent(prompt);
     const text = result.response.text();
-    console.log(
-      `[gemini] generateExplanation — done in ${Math.round(performance.now() - t0)}ms`
-    );
+    console.log(`[gemini] ${tag} — done in ${Math.round(performance.now() - t0)}ms`);
     return text;
   } catch (err) {
-    console.error("[gemini] generateExplanation failed:", err);
+    console.error(`[gemini] ${tag} failed:`, err);
     return friendlyError(err);
   }
 }
 
 export async function* generateExplanationStream(
-  prompt: string
+  prompt: string,
+  { lite = false } = {}
 ): AsyncGenerator<string> {
   const t0 = performance.now();
-  console.log(
-    `[gemini] generateExplanationStream — prompt length: ${prompt.length}`
-  );
+  const m = lite ? modelLite : model;
+  const tag = lite ? "generateExplanationStream[lite]" : "generateExplanationStream";
+  console.log(`[gemini] ${tag} — prompt length: ${prompt.length}`);
   try {
-    const result = await model.generateContentStream(prompt);
+    const result = await m.generateContentStream(prompt);
     for await (const chunk of result.stream) {
       const text = chunk.text();
       if (text) yield text;
     }
-    console.log(
-      `[gemini] generateExplanationStream — done in ${Math.round(performance.now() - t0)}ms`
-    );
+    console.log(`[gemini] ${tag} — done in ${Math.round(performance.now() - t0)}ms`);
   } catch (err) {
-    console.error("[gemini] generateExplanationStream failed:", err);
+    console.error(`[gemini] ${tag} failed:`, err);
     yield friendlyError(err);
   }
 }

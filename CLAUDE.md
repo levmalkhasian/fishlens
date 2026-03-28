@@ -33,13 +33,13 @@ All explain/summary/parse routes share `lib/analyze.ts` → `getAnalysis()` whic
 - `ai-cache.ts` — `getAICache(key)` / `setAICache(key, value)` / `aiCacheKey(...parts)`. Dedicated cache for Gemini AI responses. 200 entries max, 60-minute TTL. Keys include endpoint type + repo URL + file path + experience level. All explain/summary/issues routes check this cache before calling Gemini.
 - `analyze.ts` — `getAnalysis(repoUrl)` — shared entry point that calls github → parser → dependency-graph → cache. Returns `AnalysisResult` including `dependencyGraph`.
 - `dependency-graph.ts` — `buildDependencyGraph(callGraph, allFilePaths)`. Resolves import paths to actual files (relative, `@/` alias, npm externals). Tracks which symbols are used across file boundaries. Produces `DependencyGraph` with edges and per-file `FileDependencyInfo` (dependsOn, dependedOnBy).
-- `gemini.ts` — `generateExplanation(prompt)` and `generateExplanationStream(prompt)`. Uses Gemini 2.5 Flash. Has `friendlyError()` for rate limit / auth issues.
+- `gemini.ts` — `generateExplanation(prompt, { lite? })` and `generateExplanationStream(prompt, { lite? })`. Default model: Gemini 2.5 Flash. Pass `{ lite: true }` for Gemini 2.0 Flash (cheaper, used for summaries and issues). Has `friendlyError()` for rate limit / auth issues.
 - `prompts.ts` — `buildFileExplanationPrompt()` (with optional cross-file context), `buildGenericFilePrompt()` (for non-JS/TS files), `buildRepoSummaryPrompt()` (with optional dependency edges), `buildIssueExplanationPrompt()`. Experience-level-aware (junior/mid/senior). Word limits: 200 (summary), 250 (file), 100 (issue). Source truncation at 30K chars.
 
 ### Components
 
 - `FileExplorer.tsx` — tree view of repo files, highlights selected file
-- `ExplanationPanel.tsx` — renders AI file explanation as markdown (`react-markdown` + `remark-gfm`), experience-level badge, skeleton loading state
+- `ExplanationPanel.tsx` — renders AI file explanation as markdown (`react-markdown` + `remark-gfm`), experience-level badge, skeleton loading state, "Speak" TTS button (browser `speechSynthesis` API, zero API cost)
 - `CallGraph.tsx` — Two-level Mermaid visualization:
   - **Repo view**: files as nodes grouped by directory via `subgraph`, dependency edges between them, color intensity by connection count. Click a file to drill in.
   - **File view**: per-file function diagram with imports, functions, and calls. Toggle to hide external imports.
@@ -55,6 +55,13 @@ Two separate in-memory caches:
 2. **AI response cache** (`lib/ai-cache.ts`): Caches Gemini responses by composite key (endpoint::repoUrl::filePath::level). 200 entries, 60-min TTL. Streaming responses are accumulated during delivery and cached after completion.
 
 If 10 users analyze the same repo: GitHub API called once (cached), Gemini called once per unique file+level combo (cached).
+
+### API Cost Optimizations
+
+- **Dual model**: file explanations use Gemini 2.5 Flash (quality), summaries and issues use Gemini 2.0 Flash (cheap).
+- **Batched issues**: all uncached issues are explained in a single Gemini call returning a JSON array, instead of 10 parallel calls.
+- **Debounced level changes**: 500ms debounce on experience level toggle prevents rapid-fire API calls when switching quickly.
+- **TTS**: "Speak" button uses browser `speechSynthesis` — zero API cost.
 
 ### Markdown Rendering
 

@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
       const encoder = new TextEncoder();
       let accumulated = "";
       try {
-        for await (const chunk of generateExplanationStream(prompt)) {
+        for await (const chunk of generateExplanationStream(prompt, { lite: true })) {
           accumulated += chunk;
           controller.enqueue(encoder.encode(chunk));
         }
