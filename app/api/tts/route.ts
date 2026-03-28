@@ -1,5 +1,30 @@
 import { NextRequest } from "next/server";
 
+/** Wrap raw PCM (16-bit LE mono) in a WAV header so browsers can play it */
+function pcmToWav(pcm: Buffer, sampleRate: number): Buffer {
+  const numChannels = 1;
+  const bitsPerSample = 16;
+  const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
+  const blockAlign = numChannels * (bitsPerSample / 8);
+  const header = Buffer.alloc(44);
+
+  header.write("RIFF", 0);
+  header.writeUInt32LE(36 + pcm.length, 4);
+  header.write("WAVE", 8);
+  header.write("fmt ", 12);
+  header.writeUInt32LE(16, 16);           // fmt chunk size
+  header.writeUInt16LE(1, 20);            // PCM format
+  header.writeUInt16LE(numChannels, 22);
+  header.writeUInt32LE(sampleRate, 24);
+  header.writeUInt32LE(byteRate, 28);
+  header.writeUInt16LE(blockAlign, 32);
+  header.writeUInt16LE(bitsPerSample, 34);
+  header.write("data", 36);
+  header.writeUInt32LE(pcm.length, 40);
+
+  return Buffer.concat([header, pcm]);
+}
+
 export async function POST(req: NextRequest) {
   let body: { text?: string };
   try {
@@ -50,7 +75,7 @@ export async function POST(req: NextRequest) {
     if (!res.ok) {
       const err = await res.text();
       console.error("[tts] Gemini TTS failed:", res.status, err);
-      return new Response(JSON.stringify({ error: "TTS generation failed", status: res.status, detail: err }), {
+      return new Response(JSON.stringify({ error: "TTS generation failed", detail: err }), {
         status: 502,
         headers: { "Content-Type": "application/json" },
       });
@@ -63,17 +88,24 @@ export async function POST(req: NextRequest) {
 
     if (!audioPart?.inlineData) {
       console.error("[tts] No audio in response:", JSON.stringify(data).slice(0, 500));
-      return new Response(JSON.stringify({ error: "No audio in response" }), {
+      return new Response(JSON.stringify({ error: "No audio generated" }), {
         status: 502,
         headers: { "Content-Type": "application/json" },
       });
     }
 
-    const audioBuffer = Buffer.from(audioPart.inlineData.data, "base64");
-    return new Response(audioBuffer, {
+    const pcmBuffer = Buffer.from(audioPart.inlineData.data, "base64");
+
+    // Parse sample rate from mime type (e.g. "audio/L16;codec=pcm;rate=24000")
+    const rateMatch = audioPart.inlineData.mimeType.match(/rate=(\d+)/);
+    const sampleRate = rateMatch ? parseInt(rateMatch[1], 10) : 24000;
+
+    const wavBuffer = pcmToWav(pcmBuffer, sampleRate);
+
+    return new Response(new Uint8Array(wavBuffer), {
       headers: {
-        "Content-Type": audioPart.inlineData.mimeType,
-        "Content-Length": String(audioBuffer.length),
+        "Content-Type": "audio/wav",
+        "Content-Length": String(wavBuffer.length),
       },
     });
   } catch (err) {
