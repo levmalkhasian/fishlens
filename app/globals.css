@@ -578,6 +578,235 @@
   100% { width: 100%; }
 }
 
+/* ===== Horizontal Repo Tree (logic-gate wire style) ===== */
+
+.retro-tree-container {
+  background: #ececec;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 19px, rgba(0, 0, 0, 0.03) 19px, rgba(0, 0, 0, 0.03) 20px),
+    repeating-linear-gradient(90deg, transparent, transparent 19px, rgba(0, 0, 0, 0.03) 19px, rgba(0, 0, 0, 0.03) 20px);
+}
+
+/* --- Node layout: horizontal flex (parent → wire → children) --- */
+
+.htree-node {
+  display: inline-flex;
+  align-items: flex-start;
+}
+
+.htree-head {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-top: 2px; /* align button center with first child */
+}
+
+/* --- Node buttons --- */
+
+.htree-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 2px solid;
+  border-color: var(--retro-border-light) var(--retro-border-dark)
+    var(--retro-border-dark) var(--retro-border-light);
+  background: #d9d9d9;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.htree-btn:hover {
+  background: #ffef96;
+}
+
+.htree-btn:active {
+  border-color: var(--retro-border-dark) var(--retro-border-light)
+    var(--retro-border-light) var(--retro-border-dark);
+}
+
+.htree-btn-root {
+  background: #000080;
+  color: #fff;
+  padding: 8px 14px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.35);
+}
+
+.htree-btn-root:hover {
+  background: #0000a8;
+  color: #fff;
+}
+
+.htree-btn-folder {
+  padding: 5px 10px;
+  font-size: 11px;
+  background: #ffe100;
+  color: #000;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.25);
+}
+
+.htree-btn-folder:hover {
+  background: #fff066;
+}
+
+.htree-btn-file {
+  padding: 3px 7px;
+  font-size: 10px;
+  font-family: "Lucida Console", "Courier New", monospace;
+  background: #f0f0f0;
+  box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.15);
+}
+
+.htree-btn-file:hover {
+  background: #c9f2ff;
+}
+
+.htree-btn-open {
+  border-color: var(--retro-border-dark) var(--retro-border-light)
+    var(--retro-border-light) var(--retro-border-dark);
+}
+
+.htree-icon {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.htree-btn-root .htree-icon {
+  font-size: 15px;
+}
+
+.htree-lbl {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.htree-tog {
+  font-size: 12px;
+  font-weight: 900;
+  opacity: 0.6;
+  font-family: "Lucida Console", "Courier New", monospace;
+  line-height: 1;
+}
+
+/* --- Logic-gate wires --- */
+
+/* Horizontal wire: parent → junction */
+.htree-wire {
+  width: 24px;
+  height: 2px;
+  background: #000080;
+  flex-shrink: 0;
+}
+
+/* Children stacked vertically */
+.htree-children {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Each child row: connector + child node */
+.htree-child {
+  position: relative;
+  padding-left: 20px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+/* Vertical rail segment (drawn per-child, combines into continuous line) */
+.htree-child::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #000080;
+}
+
+/* First child: rail starts at button center */
+.htree-child:first-child::before {
+  top: 16px;
+}
+
+/* Last child: rail ends at button center */
+.htree-child:last-child::before {
+  bottom: calc(100% - 16px);
+}
+
+/* Only child: no vertical rail, just horizontal stub */
+.htree-child:only-child::before {
+  display: none;
+}
+
+/* Horizontal stub: junction → child */
+.htree-child::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 16px; /* button center */
+  width: 20px;
+  height: 2px;
+  background: #000080;
+}
+
+/* --- Popup (portal, fixed to top-right) --- */
+
+.retro-tree-popup {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  width: min(380px, calc(100vw - 40px));
+  z-index: 9999;
+  animation: popup-appear 0.15s ease-out;
+}
+
+.retro-tree-close {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid;
+  border-color: var(--retro-border-light) var(--retro-border-dark)
+    var(--retro-border-dark) var(--retro-border-light);
+  background: #d9d9d9;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.retro-tree-close:hover {
+  background: #ff5ea9;
+  color: #fff;
+}
+
+.retro-tree-close:active {
+  border-color: var(--retro-border-dark) var(--retro-border-light)
+    var(--retro-border-light) var(--retro-border-dark);
+}
+
+@keyframes popup-appear {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 @media (max-width: 768px) {
   .retro-task-item {
     display: none;
