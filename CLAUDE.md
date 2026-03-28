@@ -56,7 +56,7 @@ If 10 users analyze the same repo: GitHub API called once (cached), Gemini calle
 
 ### Markdown Rendering
 
-Uses `react-markdown` + `remark-gfm`. Styled via `.prose-glitch` CSS class in `app/globals.css`. Applied in both `ExplanationPanel` and the summary section of `app/page.tsx`. The summary panel is collapsible.
+Uses `react-markdown` + `remark-gfm`. Styled via `.prose-glitch` CSS class in `app/globals.css` (name kept for CSS compatibility). Applied in both `ExplanationPanel` and the summary section. The summary panel is collapsible.
 
 ### POST /api/parse Response Shape
 

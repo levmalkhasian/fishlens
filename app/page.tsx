@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-const GLITCH_CHARS = "!@#$%^&*()_+-=[]{}|;:,.<>?/~`";
+const SCRAMBLE_CHARS = "!@#$%^&*()_+-=[]{}|;:,.<>?/~`";
 
-function useGlitchText(text: string, active: boolean) {
+function useScrambleText(text: string, active: boolean) {
   const [display, setDisplay] = useState(text);
 
   useEffect(() => {
@@ -16,17 +16,17 @@ function useGlitchText(text: string, active: boolean) {
     let frame = 0;
     const id = setInterval(() => {
       frame++;
-      const glitched = text
+      const scrambled = text
         .split("")
         .map((ch, i) => {
           if (ch === " ") return " ";
           if (Math.random() < 0.15 && frame < 20) {
-            return GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)];
+            return SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)];
           }
           return ch;
         })
         .join("");
-      setDisplay(glitched);
+      setDisplay(scrambled);
       if (frame > 25) {
         setDisplay(text);
         clearInterval(id);
@@ -41,14 +41,15 @@ function useGlitchText(text: string, active: boolean) {
 export default function LandingPage() {
   const router = useRouter();
   const [hovered, setHovered] = useState(false);
-  const [now, setNow] = useState(() => new Date());
+  const [now, setNow] = useState<Date | null>(null);
   const [booted, setBooted] = useState(false);
   const [transitioning, setTransitioning] = useState(false);
   const [leaving, setLeaving] = useState(false);
 
-  const title = useGlitchText("GLITCH.EXE", hovered);
+  const title = useScrambleText("FISHLENS", hovered);
 
   useEffect(() => {
+    setNow(new Date());
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
@@ -73,11 +74,11 @@ export default function LandingPage() {
           <div className="flex items-center gap-2">
             <span className="retro-led" />
             <span className="font-bold tracking-wide uppercase">
-              GLITCH.EXE :: BOOT SEQUENCE
+              FISHLENS :: BOOT SEQUENCE
             </span>
           </div>
           <div className="text-xs font-bold">
-            {now.toLocaleDateString()} {now.toLocaleTimeString()}
+            {now ? `${now.toLocaleDateString()} ${now.toLocaleTimeString()}` : "\u00A0"}
           </div>
         </div>
       </div>
@@ -95,9 +96,9 @@ export default function LandingPage() {
             </div>
 
             <div className="retro-window-body text-center space-y-6 py-8">
-              {/* Big title with glitch effect */}
+              {/* Text logo with scramble effect */}
               <h1
-                className="text-5xl font-black tracking-tight leading-none select-none"
+                className="text-5xl font-black tracking-tight leading-none select-none cursor-pointer"
                 style={{ fontFamily: "'Lucida Console', 'Courier New', monospace" }}
                 onMouseEnter={() => setHovered(true)}
                 onMouseLeave={() => setHovered(false)}
@@ -106,13 +107,13 @@ export default function LandingPage() {
               </h1>
 
               <p className="text-sm font-bold uppercase tracking-widest text-[#000080]">
-                Codebase Brain Scanner
+                Codebase Wide-Angle Scanner
               </p>
 
               {/* Description panel */}
               <div className="retro-panel-inset p-4 text-left mx-4">
                 <p className="text-[13px] leading-relaxed">
-                  Drop a public GitHub repo and GLITCH breaks it down like a
+                  Drop a public GitHub repo and FISHLENS breaks it down like a
                   classic hacker toy: <strong>repo map</strong>,{" "}
                   <strong>cross-file connections</strong>,{" "}
                   <strong>live AI explainers</strong>, and{" "}
@@ -185,16 +186,25 @@ export default function LandingPage() {
               </p>
             </div>
           </div>
+
+          {/* ASCII art accent */}
+          <pre
+            className="max-w-[620px] mx-auto mt-4 text-center text-[10px] text-[#000080]/40 leading-tight select-none"
+            style={{ fontFamily: "'Lucida Console', 'Courier New', monospace" }}
+          >
+{` ___ ___ ___ _ _ _    ___ _  _ ___
+| __| __/ __| || | |  | __| \\| / __|
+| _|| _|\\__ \\ __ | |__| _|| .\` \\__ \\
+|_| |___|___/_||_|____|___|_|\\_|___/`}
+          </pre>
         </div>
       </main>
 
       {/* Taskbar */}
       <div className="retro-taskbar">
-        <div className="retro-task-start">Start</div>
-        <div className="retro-task-item">GLITCH.EXE</div>
-        <div className="retro-task-clock">
-          {now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-        </div>
+        <span className="text-xs font-bold tracking-wider" style={{ fontFamily: "'Lucida Console', monospace" }}>
+          FISHLENS&trade;
+        </span>
       </div>
 
       {/* XP Hourglass transition overlay */}
@@ -203,7 +213,7 @@ export default function LandingPage() {
           <div className="retro-window" style={{ minWidth: 280 }}>
             <div className="retro-titlebar px-3 py-1.5 flex items-center justify-between">
               <span className="font-bold text-sm">Loading...</span>
-              <span className="text-[11px]">GLITCH.EXE</span>
+              <span className="text-[11px]">FISHLENS</span>
             </div>
             <div className="retro-window-body flex flex-col items-center py-6 gap-1">
               {/* Hourglass */}
@@ -219,7 +229,7 @@ export default function LandingPage() {
               </p>
 
               <p className="text-[11px] text-[#666] mt-1">
-                Please wait while GLITCH.EXE loads
+                Please wait while FISHLENS loads
               </p>
 
               {/* XP-style progress bar */}

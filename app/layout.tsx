@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "GLITCH.EXE — Retro Codebase Explorer",
-  description: "AI-powered codebase analysis with a chaotic retro UI",
+  title: "FISHLENS — Codebase Wide-Angle Scanner",
+  description: "AI-powered codebase analysis with a retro wide-angle view",
 };
 
 export default function RootLayout({
