@@ -219,10 +219,7 @@ export default function RepoTree({
   const [popupNode, setPopupNode] = useState<TreeNode | null>(null);
   const [localContent, setLocalContent] = useState<string | null>(null);
   const [speaking, setSpeaking] = useState(false);
-  const [loadingAudio, setLoadingAudio] = useState(false);
-  const [ttsError, setTtsError] = useState(false);
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
+  const utterRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   const handleToggle = useCallback((path: string) => {
     setExpanded((prev) => {
@@ -248,10 +245,9 @@ export default function RepoTree({
   );
 
   const stopAudio = useCallback(() => {
-    if (sourceNodeRef.current) { try { sourceNodeRef.current.stop(); } catch {} sourceNodeRef.current = null; }
-    if (audioCtxRef.current) { audioCtxRef.current.close(); audioCtxRef.current = null; }
+    window.speechSynthesis.cancel();
+    utterRef.current = null;
     setSpeaking(false);
-    setLoadingAudio(false);
   }, []);
 
   const closePopup = useCallback(() => {
@@ -260,36 +256,25 @@ export default function RepoTree({
     setLocalContent(null);
   }, [stopAudio]);
 
-  const handleSpeak = useCallback(async (text: string) => {
+  const handleSpeak = useCallback((text: string) => {
     if (speaking) { stopAudio(); return; }
-    let plain = text.replace(/```[\s\S]*?```/g, "").replace(/[*#`\[\]()]/g, "").replace(/\n{2,}/g, ". ").trim();
+    const plain = text.replace(/```[\s\S]*?```/g, "").replace(/[*#`\[\]()]/g, "").replace(/\n{2,}/g, ". ").trim();
     if (!plain || plain.length < 5) return;
-    // Cap at ~500 chars on a sentence boundary for faster TTS
-    if (plain.length > 500) {
-      const cut = plain.lastIndexOf(".", 500);
-      plain = plain.slice(0, cut > 100 ? cut + 1 : 500);
-    }
-    setLoadingAudio(true);
-    setTtsError(false);
-    try {
-      const res = await fetch("/api/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: plain }),
-      });
-      if (!res.ok) { console.error("TTS failed:", res.status); setTtsError(true); return; }
-      const arrayBuffer = await res.arrayBuffer();
-      const ctx = new AudioContext();
-      audioCtxRef.current = ctx;
-      const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
-      const source = ctx.createBufferSource();
-      source.buffer = audioBuffer;
-      source.connect(ctx.destination);
-      sourceNodeRef.current = source;
-      source.onended = () => { setSpeaking(false); sourceNodeRef.current = null; };
-      source.start(0);
-      setSpeaking(true);
-    } catch (err) { console.error("TTS error:", err); setTtsError(true); } finally { setLoadingAudio(false); }
+
+    const utter = new SpeechSynthesisUtterance(plain);
+    utter.rate = 1.15;
+    utter.pitch = 1.0;
+    // Pick best available voice — prefer natural-sounding ones
+    const voices = window.speechSynthesis.getVoices();
+    const preferred = voices.find(v =>
+      /samantha|karen|google.*us|google.*uk|moira|fiona/i.test(v.name)
+    ) ?? voices.find(v => v.lang.startsWith("en")) ?? voices[0];
+    if (preferred) utter.voice = preferred;
+    utter.onend = () => { setSpeaking(false); utterRef.current = null; };
+    utter.onerror = () => { setSpeaking(false); utterRef.current = null; };
+    utterRef.current = utter;
+    window.speechSynthesis.speak(utter);
+    setSpeaking(true);
   }, [speaking, stopAudio]);
 
   useEffect(() => {
@@ -349,11 +334,10 @@ export default function RepoTree({
                     <button
                       type="button"
                       onClick={() => handleSpeak(localContent || explanation)}
-                      disabled={loadingAudio}
-                      className={`text-[9px] px-1.5 py-0.5 font-bold hover:bg-white/30 disabled:opacity-50 text-white uppercase tracking-wide ${ttsError ? "bg-red-500/40" : "bg-white/20"}`}
-                      title={speaking ? "Stop" : ttsError ? "TTS failed — try again" : "Read aloud"}
+                      className="text-[9px] px-1.5 py-0.5 font-bold bg-white/20 hover:bg-white/30 text-white uppercase tracking-wide"
+                      title={speaking ? "Stop" : "Read aloud"}
                     >
-                      {loadingAudio ? "..." : speaking ? "Stop" : ttsError ? "Retry" : "Speak"}
+                      {speaking ? "Stop" : "Speak"}
                     </button>
                   )}
                   <button
