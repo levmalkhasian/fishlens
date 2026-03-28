@@ -180,8 +180,7 @@ ${depSection}`;
 export function buildIssueExplanationPrompt(
   issue: { title: string; body: string; labels: string[] },
   experienceLevel: ExperienceLevel,
-  fileTree?: Array<{ path: string }>,
-  repoMeta?: { name: string; description: string }
+  fileTree?: Array<{ path: string }>
 ): string {
   const repoSection = repoMeta
     ? `\nRepository context:\n- Name: ${repoMeta.name}\n- Description: ${repoMeta.description || "No description provided."}`

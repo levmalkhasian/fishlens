@@ -20,6 +20,7 @@ export default function SummaryPanel({ summary, streaming }: SummaryPanelProps) 
   const sections = useMemo(() => {
     if (!summary) return [];
 
+
     const parts = summary.split(/\n?###\s+/);
     return parts
       .filter((part) => part.trim().length > 0)

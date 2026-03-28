@@ -207,6 +207,7 @@ function useZoomPan() {
   const onMouseUp = useCallback(() => {
     setIsDragging(false);
     dragging.current = false;
+    setIsDragging(false);
   }, []);
 
   const reset = useCallback(() => {
